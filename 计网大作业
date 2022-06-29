@@ -1,0 +1,70 @@
+from socket import *
+import base64
+ 
+serverName = 'smtp.163.com'
+serverPort = 25
+clientSocket = socket(AF_INET,SOCK_STREAM)
+clientSocket.connect((serverName,serverPort))
+msg = "\r\n I love computer networks!"
+endmsg = "\r\n.\r\n"
+recv = clientSocket.recv(1024).decode()
+print(recv)
+if recv[:3] != '220':
+    print('220 reply not received from server.')
+ 
+heloCommand = 'HELO Alice\r\n'
+clientSocket.send(heloCommand.encode())
+recv1 = clientSocket.recv(1024).decode()
+print(recv1)
+if recv1[:3] != '250':
+    print('250 reply not received from server.')
+ 
+login = 'AUTH LOGIN\r\n'
+clientSocket.send(login.encode())
+recv2 = clientSocket.recv(1024)
+print('login:',recv2.decode())
+username=base64.b64encode(b'--发送方用户名--@163.com').decode() + '\r\n'
+clientSocket.send(username.encode())
+recv_username = clientSocket.recv(1024)
+print('username:', recv_username.decode())
+password=base64.b64encode(b'--发送方授权码--').decode() + '\r\n'
+clientSocket.send(password.encode())
+recv_password = clientSocket.recv(1024)
+print('password: ', recv_password.decode())
+MailFROM = 'Mail From:<--发送方名称--@163.com>\r\n'
+clientSocket.send(MailFROM.encode())
+recv3 = clientSocket.recv(1024).decode()
+print(recv3)
+RCPT = 'RCPT TO:<--接收方的名称--@qq.com>\r\n'
+clientSocket.send(RCPT.encode())
+recv4 = clientSocket.recv(1024).decode()
+print(recv4)
+DATA = 'DATA\r\n'
+clientSocket.send(DATA.encode())
+recv5 = clientSocket.recv(1024).decode()
+print(recv5)
+string1 = 'Curry is the best basketball player in the world.'+'\r\n'
+string2 = 'And Micheal is the best dancer in the world.'+'\r\n'
+END = '.\r\n'
+who = '13228151087@163.com'
+from_ = who
+to = ['1609724462@qq.com']
+headers = [
+    'From: %s' % from_,
+    'To: %s' % ','.join(to),
+    'Subject: send SMTP',
+]
+ 
+body = [
+    string1,
+    string2,
+]
+msg = '\r\n\r\n'.join(('\r\n'.join(headers), '\r\n'.join(body)))
+clientSocket.send(msg.encode())
+clientSocket.send(END.encode())
+recv5 = clientSocket.recv(1024).decode()
+print(recv5)
+QUIT = "QUIT\r\n"
+clientSocket.send(QUIT.encode())
+recv6 = clientSocket.recv(1024).decode()
+print(recv6)
